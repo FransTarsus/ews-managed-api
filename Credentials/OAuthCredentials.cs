@@ -43,7 +43,7 @@ namespace Microsoft.Exchange.WebServices.Data
 
         private static readonly Regex validTokenPattern = new Regex(
             @"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$",
-            RegexOptions.Compiled);
+            RegexOptions.Compiled );
 
         private readonly string token;
 
@@ -53,8 +53,8 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Initializes a new instance of the <see cref="OAuthCredentials"/> class.
         /// </summary>
         /// <param name="token">The JSON web token string.</param>
-        public OAuthCredentials(string token)
-            : this(token, false)
+        public OAuthCredentials( string token )
+            : this( token, false )
         {
         }
 
@@ -63,36 +63,36 @@ namespace Microsoft.Exchange.WebServices.Data
         /// </summary>
         /// <param name="token"></param>
         /// <param name="verbatim"></param>
-        internal OAuthCredentials(string token, bool verbatim)
+        internal OAuthCredentials( string token, bool verbatim )
         {
-            EwsUtilities.ValidateParam(token, "token");
+            EwsUtilities.ValidateParam( token, "token" );
 
             string rawToken;
-            if (verbatim)
+            if ( verbatim )
             {
                 rawToken = token;
             }
             else
             {
-                int whiteSpacePosition = token.IndexOf(' ');
-                if (whiteSpacePosition == -1)
+                int whiteSpacePosition = token.IndexOf( ' ' );
+                if ( whiteSpacePosition == -1 )
                 {
                     rawToken = token;
                 }
                 else
                 {
-                    string authType = token.Substring(0, whiteSpacePosition);
-                    if (string.Compare(authType, BearerAuthenticationType, StringComparison.OrdinalIgnoreCase) != 0)
+                    string authType = token.Substring( 0, whiteSpacePosition );
+                    if ( string.Compare( authType, BearerAuthenticationType, StringComparison.OrdinalIgnoreCase ) != 0 )
                     {
-                        throw new ArgumentException(Strings.InvalidAuthScheme);
+                        throw new ArgumentException( Strings.InvalidAuthScheme );
                     }
 
-                    rawToken = token.Substring(whiteSpacePosition + 1);
+                    rawToken = token.Substring( whiteSpacePosition + 1 );
                 }
 
-                if (!validTokenPattern.IsMatch(rawToken))
+                if ( !validTokenPattern.IsMatch( rawToken ) )
                 {
-                    throw new ArgumentException(Strings.InvalidOAuthToken);
+                    throw new ArgumentException( Strings.InvalidOAuthToken );
                 }
             }
 
@@ -104,9 +104,9 @@ namespace Microsoft.Exchange.WebServices.Data
         /// specified credentials.
         /// </summary>
         /// <param name="credentials">Credentials to use.</param>
-        public OAuthCredentials(ICredentials credentials)
+        public OAuthCredentials( ICredentials credentials )
         {
-            EwsUtilities.ValidateParam(credentials, "credentials");
+            EwsUtilities.ValidateParam( credentials, "credentials" );
 
             this.credentials = credentials;
         }
@@ -115,14 +115,17 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Add the Authorization header to a service request.
         /// </summary>
         /// <param name="request">The request</param>
-        internal override void PrepareWebRequest(IEwsHttpWebRequest request)
+        internal override void PrepareWebRequest( IEwsHttpWebRequest request )
         {
-            base.PrepareWebRequest(request);
+            base.PrepareWebRequest( request );
 
-            if (this.token != null)
+            if ( this.token != null )
             {
-                request.Headers.Remove(HttpRequestHeader.Authorization.ToString());
-                request.Headers.Authorization = new AuthenticationHeaderValue(this.token);
+                request.Headers.Remove( HttpRequestHeader.Authorization.ToString() );
+                //Split token and key
+                var auth = this.token.Split( " ".ToCharArray() );
+
+                request.Headers.Authorization = new AuthenticationHeaderValue( auth[ 0 ], auth[ 1 ] );
             }
             else
             {
